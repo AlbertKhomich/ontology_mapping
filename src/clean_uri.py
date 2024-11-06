@@ -1,13 +1,12 @@
+import sys
 from pathlib import Path
 from rdflib import Graph, URIRef
 
-current_dir = Path(__file__).resolve().parent
-data_dir = current_dir.parent / "data"
-
-file_path = data_dir / "WDC/WDC_properties_new.rdf"
-
 def correct_concat(uri):
     uri = uri.replace('"', '') 
+
+    if uri.endswith('/'):
+        uri = uri[:-1]
 
     last_https = uri.rfind('https://')
     last_http = uri.rfind('http://')
@@ -25,23 +24,38 @@ def correct_concat(uri):
         
     return uri
 
-g = Graph()
+def process_graph(file_path, format):
+    g = Graph()
 
-try:
-    g.parse(file_path, format="xml")
+    try:
+        g.parse(file_path, format="xml")
 
-    for s, p, o in g:
-        if isinstance(s, URIRef) and not s.startswith('http'):
-            g.remove((s, p ,o))
-            continue
+        for s, p, o in g:
+            if isinstance(s, URIRef) and not s.startswith('http'):
+                g.remove((s, p ,o))
+                continue
 
-        checked_uri = correct_concat(str(s))
-        if checked_uri != str(s):
-            g.remove((s, p, o))
-            g.add((URIRef(checked_uri), p, o))
+            checked_uri = correct_concat(str(s))
+            if checked_uri != str(s):
+                g.remove((s, p, o))
+                g.add((URIRef(checked_uri), p, o))
 
-    g.serialize(data_dir / 'WDC/WDC_properties_cleaned.rdf', format='pretty-xml')
-    print("Cleaned RDF file saved as 'cleaned_output.rdf'.")
+        output_file = file_path.with_name(file_path.stem + '_cleaned' + file_path.suffix)
+        g.serialize(output_file, format=format)
+        print(f"Cleaned file saved as '{output_file.name}'.")
 
-except Exception as e:
-    print(f"Error while parsing RDF: {e}")
+    except Exception as e:
+        print(f"Error while parsing {format}: {e}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python3 clean_uri.py <input_file> <format>")
+        print("Format options: 'xml' for RDF/XML, 'nt' for N-Triples")
+    else:
+        input_file = Path(sys.argv[1])
+        format = sys.argv[2].strip().lower()
+
+        if format not in ['xml', 'nt']:
+            print("Invalid format. Please use 'xml' for RDF/XML or 'nt' for N_Triples.")
+        else:
+            process_graph(input_file, format)

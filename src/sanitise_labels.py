@@ -5,4 +5,4 @@ def sanitize(input, output):
             label = parts[2]
             outfile.write(f'{parts[0]} {parts[1]} "{label.replace('"', '')}" .\n')
 
-sanitize('/Users/admin/scripts/add-rdf-type/data/wikidata_properties.nt', '/Users/admin/scripts/add-rdf-type/data/wikidata_properties_clean.nt')
+sanitize('/Users/admin/scripts/map_helper/data/bioportal_merged/Bioportal_classes.nt', '/Users/admin/scripts/map_helper/data/bioportal_merged/Bioportal_classes_clean.nt')

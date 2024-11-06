@@ -1,12 +1,20 @@
+import sys
 from rdflib import Graph, Namespace, URIRef
-from rdflib.namespace import RDF, OWL, RDFS
+from rdflib.namespace import RDF, OWL
 from pathlib import Path
 
-current_dir = Path(__file__).resolve().parent
-data_dir = current_dir.parent / "data"
+if len(sys.argv) != 4:
+    print("Usage: python rdf_to_nt.py <input_rdf_file> <output_nt_file> <relation_type>")
+    print("Relation type should be either 'eq' for equivalentClass, 'sa' for sameAs' or 'eqp' for quivalentProperty.")
+    sys.exit(1)
 
-file_path_input = "/Users/admin/scripts/add-rdf-type/data/alignments/WDC_wikidata_props_alignment.rdf"
-file_path_output = "/Users/admin/scripts/add-rdf-type/data/alignments/WDC_wikidata_props_alignment.nt"
+file_path_input = Path(sys.argv[1])
+file_path_output = Path(sys.argv[2])
+relation_type = sys.argv[3]
+
+if relation_type not in ['eq', 'sa', 'eqp']:
+    print("Invalid relation type. Use 'eq' for equivalentClass, 'sa' for sameAs and 'eqp' for quivalentProperty.")
+    sys.exit(1)
 
 ALIGN = Namespace("http://knowledgeweb.semanticweb.org/heterogeneity/alignment")
 
@@ -20,7 +28,14 @@ for cell in g.subjects(RDF.type, ALIGN.Cell):
     entity2 = g.value(cell, ALIGN.entity2)
 
     if isinstance(entity1, URIRef) and isinstance(entity2, URIRef):
-        # output_graph.add((entity1, OWL.equivalentClass, entity2))
-        output_graph.add((entity1, OWL.sameAs, entity2))
+        if relation_type == 'eq':
+            output_graph.add((entity1, OWL.equivalentClass, entity2))
+        elif relation_type == 'sa':
+            output_graph.add((entity1, OWL.sameAs, entity2))
+        else:
+            output_graph.add((entity1, OWL.equivalentProperty, entity2))
+
 
 output_graph.serialize(destination=file_path_output, format="nt")
+
+print(f"New N-Triples file created at: {file_path_output}")

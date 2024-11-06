@@ -1,19 +1,23 @@
+import sys
 from pathlib import Path
-from rdflib import Graph, Namespace, RDF, URIRef
+from rdflib import Graph, Namespace, RDF
 
-current_dir = Path(__file__).resolve().parent
-data_dir = current_dir.parent / "data"
+if len(sys.argv) != 3:
+    print("Usage: python add_class_type.py <input_nt_file> <output_rdf_file>")
 
-file_path = '/Users/admin/scripts/add-rdf-type/data/wikidata/wikidata_properties.rdf'
+input_file_path = Path(sys.argv[1])
+output_file_path = Path(sys.argv[2])
+
+file_path = '/Users/admin/scripts/add-rdf-type/data/go/go_properties_correct.nt'
 
 OWL = Namespace("http://www.w3.org/2002/07/owl#")
 
 g = Graph()
-g.parse(file_path, format="xml")
+g.parse(input_file_path, format="nt")
 
 for subject in set(g.subjects()):
     g.add((subject, RDF.type, OWL.Class))
 
-g.serialize('/Users/admin/scripts/add-rdf-type/data/wikidata/wikidata_properties_new.rdf', format="pretty-xml")
+g.serialize(output_file_path, format="pretty-xml")
 
-#Script adds OWL type:Class to .rdf
+print(f"New RDF file created at: {output_file_path}")
