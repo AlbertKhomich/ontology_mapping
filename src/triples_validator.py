@@ -4,7 +4,7 @@ def is_valid_uri(uri):
     return re.match(r'^<([^:]+:[^\s"<>[\](){}]*)>$', uri)
 
 def sanitize_literal(literal):
-    return literal.replace('"', '')
+    return literal.replace('"', '').replace('\\', '')
 
 def sanitize(input_file, output_file):
     with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', encoding='utf-8') as outfile:
@@ -27,6 +27,6 @@ def sanitize(input_file, output_file):
             outfile.write(f'{subject} {predicate} "{label}" .\n')
 
 sanitize(
-    '/Users/admin/scripts/map_helper/data/bioportal_merged/Bioportal_properties.nt',
-    '/Users/admin/scripts/map_helper/data/bioportal_merged/Bioportal_properties_clean.nt',
+    '/Users/admin/scripts/map_helper/data/clinical_trials/clinical_trials_classes.nt',
+    '/Users/admin/scripts/map_helper/data/clinical_trials/clinical_trials_classes_clean.nt',
 )
